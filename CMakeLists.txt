@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(teleop_twist_joy)
 
-find_package(catkin REQUIRED COMPONENTS roscpp roslaunch roslint)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp roslaunch roslint sensor_msgs)
 
 catkin_package(
+  INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -29,4 +31,5 @@ install(DIRECTORY launch config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}) 
 
 roslint_cpp()
+roslint_add_test()
 roslaunch_add_file_check(launch/teleop.launch)
