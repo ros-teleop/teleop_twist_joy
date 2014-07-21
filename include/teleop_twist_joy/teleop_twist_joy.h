@@ -25,34 +25,24 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #ifndef TELEOP_TWIST_JOY_TELEOP_TWIST_JOY_H
 #define TELEOP_TWIST_JOY_TELEOP_TWIST_JOY_H
 
-#include "ros/ros.h"
-#include "sensor_msgs/Joy.h"
-
+namespace ros { class NodeHandle; }
 
 namespace teleop_twist_joy
 {
 
+/**
+ * Class implementing a basic Joy -> Twist translation.
+ */
 class TeleopTwistJoy
 {
 public:
   explicit TeleopTwistJoy(ros::NodeHandle* nh);
 
 private:
-  void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
-
   ros::NodeHandle* nh_;
-  ros::Subscriber joy_sub_;
-  ros::Publisher cmd_vel_pub_;
 
-  int enable_button_;
-  int enable_turbo_button_;
-  int axis_linear_;
-  int axis_angular_;
-  float scale_linear_;
-  float scale_linear_turbo_;
-  float scale_angular_;
-
-  bool sent_disable_msg_;
+  struct Impl;
+  Impl* pimpl_;
 };
 
 }  // namespace teleop_twist_joy
