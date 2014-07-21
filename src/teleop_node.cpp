@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "teleop_twist_joy_node");
 
-  ros::NodeHandle nh;
-  teleop_twist_joy::TeleopTwistJoy joy_teleop(&nh);
+  ros::NodeHandle nh(""), nh_param("~");
+  teleop_twist_joy::TeleopTwistJoy joy_teleop(&nh, &nh_param);
 
   ros::spin();
 }

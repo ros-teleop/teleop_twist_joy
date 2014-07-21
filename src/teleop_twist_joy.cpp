@@ -47,9 +47,9 @@ struct TeleopTwistJoy::Impl
   int enable_turbo_button;
   int axis_linear;
   int axis_angular;
-  float scale_linear;
-  float scale_linear_turbo;
-  float scale_angular;
+  double scale_linear;
+  double scale_linear_turbo;
+  double scale_angular;
 
   bool sent_disable_msg;
 };
@@ -59,22 +59,29 @@ struct TeleopTwistJoy::Impl
  * parameters later without breaking ABI compatibility, for robots which link TeleopTwistJoy
  * directly into base nodes.
  */
-TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh) : nh_(nh)
+TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param) : nh_(nh)
 {
   pimpl_ = new Impl;
 
   pimpl_->cmd_vel_pub = nh_->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   pimpl_->joy_sub = nh_->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
 
-  ros::param::param("~enable_button", pimpl_->enable_button, 0);
-  ros::param::param("~enable_turbo_button", pimpl_->enable_turbo_button, -1);
+  nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
+  nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
 
-  ros::param::param("~axis_linear", pimpl_->axis_linear, 1);
-  ros::param::param("~scale_linear", pimpl_->scale_linear, 0.5f);
-  ros::param::param("~scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0f);
+  nh_param->param<int>("axis_linear", pimpl_->axis_linear, 1);
+  nh_param->param<double>("scale_linear", pimpl_->scale_linear, 0.5);
+  nh_param->param<double>("scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0);
 
-  ros::param::param("~axis_angular", pimpl_->axis_angular, 0);
-  ros::param::param("~scale_angular", pimpl_->scale_angular, 1.0f);
+  nh_param->param<int>("axis_angular", pimpl_->axis_angular, 0);
+  nh_param->param<double>("scale_angular", pimpl_->scale_angular, 1.0);
+
+  ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
+      pimpl_->axis_linear, pimpl_->axis_angular);
+  ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
+      pimpl_->enable_button, pimpl_->scale_linear, pimpl_->scale_angular);
+  ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
+      "Turbo on button %i at scale %f linear.", pimpl_->enable_turbo_button, pimpl_->scale_linear_turbo);
 
   pimpl_->sent_disable_msg = false;
 }
