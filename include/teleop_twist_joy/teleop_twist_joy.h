@@ -36,11 +36,9 @@ namespace teleop_twist_joy
 class TeleopTwistJoy
 {
 public:
-  explicit TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param);
+  TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param);
 
 private:
-  ros::NodeHandle* nh_;
-
   struct Impl;
   Impl* pimpl_;
 };

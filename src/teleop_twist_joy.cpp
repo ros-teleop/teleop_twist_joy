@@ -55,16 +55,16 @@ struct TeleopTwistJoy::Impl
 };
 
 /**
- * Internal members of class. This is the pimpl idiom, and allows more flexibility in adding
- * parameters later without breaking ABI compatibility, for robots which link TeleopTwistJoy
- * directly into base nodes.
+ * Constructs TeleopTwistJoy.
+ * \param nh NodeHandle to use for setting up the publisher and subscriber.
+ * \param nh_param NodeHandle to use for searching for configuration parameters.
  */
-TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param) : nh_(nh)
+TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 {
   pimpl_ = new Impl;
 
-  pimpl_->cmd_vel_pub = nh_->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
-  pimpl_->joy_sub = nh_->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
+  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
+  pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
 
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
