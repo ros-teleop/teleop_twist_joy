@@ -43,13 +43,14 @@ struct TeleopTwistJoy::Impl
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
 
+  bool is_3D;
   int enable_button;
   int enable_turbo_button;
-  int axis_linear;
-  int axis_angular;
-  double scale_linear;
-  double scale_linear_turbo;
-  double scale_angular;
+  int axis_linear_x, axis_linear_y, axis_linear_z;
+  int axis_angular_roll, axis_angular_pitch, axis_angular_yaw;
+  double scale_linear_x, scale_linear_y, scale_linear_z;
+  double linear_turbo_multiplier;
+  double scale_angular_roll, scale_angular_pitch, scale_angular_yaw;
 
   bool sent_disable_msg;
 };
@@ -66,22 +67,42 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
 
+  nh_param->param<bool>("is_3D", pimpl_->is_3D, false);
+
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
+  nh_param->param<double>("linear_turbo_multiplier", pimpl_->linear_turbo_multiplier, 1.0);
 
-  nh_param->param<int>("axis_linear", pimpl_->axis_linear, 1);
-  nh_param->param<double>("scale_linear", pimpl_->scale_linear, 0.5);
-  nh_param->param<double>("scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0);
+  nh_param->param<int>("axis_linear_x", pimpl_->axis_linear_x, 1);
+  nh_param->param<double>("scale_linear_x", pimpl_->scale_linear_x, 0.5);
 
-  nh_param->param<int>("axis_angular", pimpl_->axis_angular, 0);
-  nh_param->param<double>("scale_angular", pimpl_->scale_angular, 1.0);
+  nh_param->param<int>("axis_angular_yaw", pimpl_->axis_angular_yaw, 0);
+  nh_param->param<double>("scale_angular_yaw", pimpl_->scale_angular_yaw, 1.0);
 
-  ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
-      pimpl_->axis_linear, pimpl_->axis_angular);
-  ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
-      pimpl_->enable_button, pimpl_->scale_linear, pimpl_->scale_angular);
+  if (pimpl_->is_3D)
+  {
+    nh_param->param<int>("axis_linear_y", pimpl_->axis_linear_y, 1);
+    nh_param->param<double>("scale_linear_y", pimpl_->scale_linear_y, 0.5);
+
+    nh_param->param<int>("axis_linear_z", pimpl_->axis_linear_z, 1);
+    nh_param->param<double>("scale_linear_z", pimpl_->scale_linear_z, 0.5);
+
+    ROS_INFO_NAMED("TeleopTwistJoy", "Using axis [%i, %i, %i] for linear [x,y,z] and axis %i for angular.",
+        pimpl_->axis_linear_x, pimpl_->axis_linear_y, pimpl_->axis_linear_z, pimpl_->axis_angular_yaw);
+    ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f, %f, %f for linear x,y,z, scale %f angular.",
+        pimpl_->enable_button, pimpl_->scale_linear_x, pimpl_->scale_linear_y, pimpl_->scale_linear_z,
+        pimpl_->scale_angular_yaw);
+  }
+  else
+  {
+    ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
+    pimpl_->axis_linear_x, pimpl_->axis_angular_yaw);
+    ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
+    pimpl_->enable_button, pimpl_->scale_linear_x, pimpl_->scale_angular_yaw);
+  }
+
   ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
-      "Turbo on button %i at scale %f linear.", pimpl_->enable_turbo_button, pimpl_->scale_linear_turbo);
+      "Turbo on button %i at scale %f linear.", pimpl_->enable_turbo_button, pimpl_->linear_turbo_multiplier);
 
   pimpl_->sent_disable_msg = false;
 }
@@ -93,15 +114,25 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
 
   if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])
   {
-    cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear_turbo;
-    cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
+    cmd_vel_msg.linear.x = joy_msg->axes[axis_linear_x] * linear_turbo_multiplier;
+    cmd_vel_msg.angular.z = joy_msg->axes[axis_angular_yaw] * scale_angular_yaw;
+    if (is_3D)
+    {
+      cmd_vel_msg.linear.y = joy_msg->axes[axis_linear_y] * scale_linear_y * linear_turbo_multiplier;
+      cmd_vel_msg.linear.z = joy_msg->axes[axis_linear_z] * scale_linear_z * linear_turbo_multiplier;
+    }
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
   else if (joy_msg->buttons[enable_button])
   {
-    cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear;
-    cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
+    cmd_vel_msg.linear.x = joy_msg->axes[axis_linear_x] * scale_linear_x;
+    cmd_vel_msg.angular.z = joy_msg->axes[axis_angular_yaw] * scale_angular_yaw;
+    if (is_3D)
+    {
+      cmd_vel_msg.linear.y = joy_msg->axes[axis_linear_y] * scale_linear_y;
+      cmd_vel_msg.linear.z = joy_msg->axes[axis_linear_z] * scale_linear_z;
+    }
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }

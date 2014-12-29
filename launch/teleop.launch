@@ -1,5 +1,5 @@
 <launch>
-  <arg name="joy_config" default="ps3" />
+  <arg name="joy_config" default="xd3" />
   <arg name="joy_dev" default="/dev/input/js0" />
   
   <node pkg="joy" type="joy_node" name="joy_node">
@@ -8,7 +8,7 @@
     <param name="autorepeat_rate" value="20" />
   </node>
 
-  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
+  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node" output="screen">
     <rosparam command="load" file="$(find teleop_twist_joy)/config/$(arg joy_config).config.yaml" />
   </node>
 </launch>
