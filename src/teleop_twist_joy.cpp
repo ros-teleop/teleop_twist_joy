@@ -93,7 +93,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
         "TeleopTwistJoy", "Using axis %i for linear, %i for horizontal, %i for vertical and axis %i for angular.",
         pimpl_->axis_linear, pimpl_->axis_horizontal, pimpl_->axis_vertical, pimpl_->axis_angular);
     ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i .", pimpl_->enable_button);
-    ROS_INFO_NAMED("TeleopTwistJoy", "Teleop scale %f for linear, %f for horizontal, %f for vertical scale %f angular.",
+    ROS_INFO_NAMED("TeleopTwistJoy", "Scale %f for linear, %f for horizontal, %f for vertical and scale %f angular.",
         pimpl_->scale_linear, pimpl_->scale_horizontal, pimpl_->scale_vertical, pimpl_->scale_angular);
   }
   else
