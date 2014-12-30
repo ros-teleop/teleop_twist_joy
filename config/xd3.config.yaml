@@ -1,15 +1,17 @@
 # Logitech Extreme 3D Pro
 is_3D: true
+
 axis_linear: 1  # Forward/Back [X]
 scale_linear: 0.7
+scale_linear_turbo: 1.5
 
-axis_strafe: 0  # Left/Right [Y]
-scale_horizonal: 0.7
+axis_horizontal: 0  # Left/Right [Y]
+scale_horizontal: 0.7
+scale_horizontal_turbo: 1.5
 
 axis_vertical: 3  # Throttle [Z]
 scale_vertical: 0.7
-
-scale_linear_turbo: 1.5
+scale_vertical_turbo: 1.5
 
 axis_angular: 2  # Twist
 scale_angular: 0.4
