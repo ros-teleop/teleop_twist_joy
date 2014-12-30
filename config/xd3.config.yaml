@@ -1,18 +1,18 @@
 # Logitech Extreme 3D Pro
 is_3D: true
-axis_linear_x: 1  # Forward/Back [X]
-scale_linear_x: 0.7
+axis_linear: 1  # Forward/Back [X]
+scale_linear: 0.7
 
-axis_linear_y: 0  # Left/Right [Y]
-scale_linear_y: 0.7
+axis_strafe: 0  # Left/Right [Y]
+scale_horizonal: 0.7
 
-axis_linear_z: 3  # Throttle [Z]
-scale_linear_z: 0.7
+axis_vertical: 3  # Throttle [Z]
+scale_vertical: 0.7
 
-linear_turbo_multiplier: 2.0
+scale_linear_turbo: 1.5
 
-axis_angular_yaw: 2  # Twist
-scale_angular_yaw: 0.4
+axis_angular: 2  # Twist
+scale_angular: 0.4
 
 enable_button: 0  # Trigger
 enable_turbo_button: 1  # Button 2 aka thumb button
