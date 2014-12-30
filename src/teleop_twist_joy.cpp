@@ -71,10 +71,10 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
-  nh_param->param<double>("scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0);
 
   nh_param->param<int>("axis_linear", pimpl_->axis_linear, 1);
   nh_param->param<double>("scale_linear", pimpl_->scale_linear, 0.5);
+  nh_param->param<double>("scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0);
 
   nh_param->param<int>("axis_angular", pimpl_->axis_angular, 0);
   nh_param->param<double>("scale_angular", pimpl_->scale_angular, 1.0);
