@@ -43,12 +43,13 @@ struct TeleopTwistJoy::Impl
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
 
+  bool is_3D;
   int enable_button;
   int enable_turbo_button;
-  int axis_linear;
+  int axis_linear, axis_horizontal, axis_vertical;
   int axis_angular;
-  double scale_linear;
-  double scale_linear_turbo;
+  double scale_linear, scale_horizontal, scale_vertical;
+  double scale_linear_turbo, scale_horizontal_turbo, scale_vertical_turbo;
   double scale_angular;
 
   bool sent_disable_msg;
@@ -66,6 +67,8 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
 
+  nh_param->param<bool>("is_3D", pimpl_->is_3D, false);
+
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
 
@@ -76,10 +79,31 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   nh_param->param<int>("axis_angular", pimpl_->axis_angular, 0);
   nh_param->param<double>("scale_angular", pimpl_->scale_angular, 1.0);
 
-  ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
-      pimpl_->axis_linear, pimpl_->axis_angular);
-  ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
-      pimpl_->enable_button, pimpl_->scale_linear, pimpl_->scale_angular);
+  if (pimpl_->is_3D)
+  {
+    nh_param->param<int>("axis_horizontal", pimpl_->axis_horizontal, 1);
+    nh_param->param<double>("scale_horizontal", pimpl_->scale_horizontal, 0.5);
+    nh_param->param<double>("scale_linear_horizontal", pimpl_->scale_horizontal_turbo, 1.0);
+
+    nh_param->param<int>("axis_vertical", pimpl_->axis_vertical, 1);
+    nh_param->param<double>("scale_vertical", pimpl_->scale_vertical, 0.5);
+    nh_param->param<double>("scale_vertical_turbo", pimpl_->scale_vertical_turbo, 1.0);
+
+    ROS_INFO_NAMED(
+        "TeleopTwistJoy", "Using axis %i for linear, %i for horizontal, %i for vertical and axis %i for angular.",
+        pimpl_->axis_linear, pimpl_->axis_horizontal, pimpl_->axis_vertical, pimpl_->axis_angular);
+    ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i .", pimpl_->enable_button);
+    ROS_INFO_NAMED("TeleopTwistJoy", "Scale %f for linear, %f for horizontal, %f for vertical and scale %f angular.",
+        pimpl_->scale_linear, pimpl_->scale_horizontal, pimpl_->scale_vertical, pimpl_->scale_angular);
+  }
+  else
+  {
+    ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
+    pimpl_->axis_linear, pimpl_->axis_angular);
+    ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
+    pimpl_->enable_button, pimpl_->scale_linear, pimpl_->scale_angular);
+  }
+
   ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
       "Turbo on button %i at scale %f linear.", pimpl_->enable_turbo_button, pimpl_->scale_linear_turbo);
 
@@ -95,6 +119,11 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   {
     cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear_turbo;
     cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
+    if (is_3D)
+    {
+      cmd_vel_msg.linear.y = joy_msg->axes[axis_horizontal] * scale_horizontal_turbo;
+      cmd_vel_msg.linear.z = joy_msg->axes[axis_vertical] * scale_vertical_turbo;
+    }
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
@@ -102,6 +131,11 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   {
     cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear;
     cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
+    if (is_3D)
+    {
+      cmd_vel_msg.linear.y = joy_msg->axes[axis_horizontal] * scale_horizontal;
+      cmd_vel_msg.linear.z = joy_msg->axes[axis_vertical] * scale_vertical;
+    }
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
