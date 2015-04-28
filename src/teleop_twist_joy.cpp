@@ -46,6 +46,7 @@ struct TeleopTwistJoy::Impl
   int enable_button;
   int enable_turbo_button;
   int axis_linear;
+  int axis_linear_omni;
   int axis_angular;
   double scale_linear;
   double scale_linear_turbo;
@@ -70,14 +71,15 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
 
   nh_param->param<int>("axis_linear", pimpl_->axis_linear, 1);
+  nh_param->param<int>("axis_linear_omni", pimpl_->axis_linear_omni, 2);
   nh_param->param<double>("scale_linear", pimpl_->scale_linear, 0.5);
   nh_param->param<double>("scale_linear_turbo", pimpl_->scale_linear_turbo, 1.0);
 
   nh_param->param<int>("axis_angular", pimpl_->axis_angular, 0);
   nh_param->param<double>("scale_angular", pimpl_->scale_angular, 1.0);
 
-  ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear and axis %i for angular.",
-      pimpl_->axis_linear, pimpl_->axis_angular);
+  ROS_INFO_NAMED("TeleopTwistJoy", "Using axis %i for linear, axis %i for y direction ()for Omni-directional robot) and axis %i for angular.",
+      pimpl_->axis_linear, pimpl_->axis_linear_omni, pimpl_->axis_angular);
   ROS_INFO_NAMED("TeleopTwistJoy", "Teleop on button %i at scale %f linear, scale %f angular.",
       pimpl_->enable_button, pimpl_->scale_linear, pimpl_->scale_angular);
   ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
@@ -94,6 +96,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])
   {
     cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear_turbo;
+    cmd_vel_msg.linear.y = joy_msg->axes[axis_linear_omni] * scale_linear;
     cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
@@ -101,6 +104,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   else if (joy_msg->buttons[enable_button])
   {
     cmd_vel_msg.linear.x = joy_msg->axes[axis_linear] * scale_linear;
+    cmd_vel_msg.linear.y = joy_msg->axes[axis_linear_omni] * scale_linear;
     cmd_vel_msg.angular.z = joy_msg->axes[axis_angular] * scale_angular;
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
