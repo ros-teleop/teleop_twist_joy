@@ -1,0 +1,11 @@
+<launch>
+  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
+    <rosparam command="load" file="$(find teleop_twist_joy)/config/ps3-holonomic.config.yaml" />
+  </node>
+
+  <test test-name="holonomic_joy_test"
+        pkg="teleop_twist_joy"
+        type="holonomic_joy_test"
+        time-limit="50.0">
+  </test>
+</launch>
