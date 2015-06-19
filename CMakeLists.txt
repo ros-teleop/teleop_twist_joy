@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(teleop_twist_joy)
 
-find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp roslaunch roslint sensor_msgs rostest)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp roslaunch roslint sensor_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -18,8 +18,6 @@ add_executable(${PROJECT_NAME}_node src/teleop_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 set_target_properties(${PROJECT_NAME}_node
   PROPERTIES OUTPUT_NAME teleop_node PREFIX "")
-
-
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
