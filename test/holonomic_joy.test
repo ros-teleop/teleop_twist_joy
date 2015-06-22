@@ -16,10 +16,10 @@
   <test test-name="test_joy_twist_node" pkg="teleop_twist_joy" type="test_joy_twist.py" time-limit="50.0">
     <rosparam>
       publish_joy:
-        axes: [ 0.3, 0.3, 0.5 ]
+        axes: [ 0.3, 0.4, 0.5 ]
         buttons: [ 1 ]
       expect_cmd_vel:
-        linear: [ x: 0.3, y: 2.0, z: 0 ]
+        linear: [ x: 0.4, y: 2.0, z: 0 ]
         angular: [ x: 0, y: 0, z: 0.9 ]
     </rosparam>
   </test>
