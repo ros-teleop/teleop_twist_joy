@@ -52,12 +52,12 @@ class TestJoyTwist(unittest.TestCase):
             self.pub.publish(pub_joy)
             time.sleep(0.1)
 
-        self.assertAlmostEqual(self.expect_cmd_vel['linear']['x'], self.received_cmd_vel.linear.x)
-        self.assertAlmostEqual(self.expect_cmd_vel['linear']['y'], self.received_cmd_vel.linear.y)
-        self.assertAlmostEqual(self.expect_cmd_vel['linear']['z'], self.received_cmd_vel.linear.z)
-        self.assertAlmostEqual(self.expect_cmd_vel['angular']['x'], self.received_cmd_vel.angular.x)
-        self.assertAlmostEqual(self.expect_cmd_vel['angular']['y'], self.received_cmd_vel.angular.y)
-        self.assertAlmostEqual(self.expect_cmd_vel['angular']['z'], self.received_cmd_vel.angular.z)
+        self.assertAlmostEqual(self.received_cmd_vel.linear.x, self.expect_cmd_vel['linear']['x'])
+        self.assertAlmostEqual(self.received_cmd_vel.linear.y, self.expect_cmd_vel['linear']['y'])
+        self.assertAlmostEqual(self.received_cmd_vel.linear.z, self.expect_cmd_vel['linear']['z'])
+        self.assertAlmostEqual(self.received_cmd_vel.angular.x, self.expect_cmd_vel['angular']['x'])
+        self.assertAlmostEqual(self.received_cmd_vel.angular.y, self.expect_cmd_vel['angular']['y'])
+        self.assertAlmostEqual(self.received_cmd_vel.angular.z, self.expect_cmd_vel['angular']['z'])
 
     def callback(self, msg):
         self.received_cmd_vel = geometry_msgs.msg.Twist()
