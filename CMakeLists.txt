@@ -25,11 +25,23 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}) 
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}) 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 roslint_cpp()
 roslint_add_test()
 roslaunch_add_file_check(launch/teleop.launch)
+
+if (CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED COMPONENTS rospy)
+  include_directories(include ${catkin_INCLUDE_DIRS})
+
+  add_rostest(test/no_enable_joy.test)
+  add_rostest(test/nonholonomic_joy.test)
+  add_rostest(test/holonomic_joy.test)
+  add_rostest(test/turbo_enable_joy.test)
+  add_rostest(test/only_turbo_joy.test)
+  add_rostest(test/six_dof_joy.test)
+endif()
