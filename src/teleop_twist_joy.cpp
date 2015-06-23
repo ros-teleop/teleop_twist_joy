@@ -27,6 +27,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include "sensor_msgs/Joy.h"
 #include "teleop_twist_joy/teleop_twist_joy.h"
 
+#include <map>
+#include <string>
+
 
 namespace teleop_twist_joy
 {
