@@ -9,7 +9,7 @@
     </rosparam>
   </node>
 
-  <test test-name="test_joy_twist_node" pkg="teleop_twist_joy" type="test_joy_twist.py" time-limit="50.0">
+  <test test-name="no_enable_joy" pkg="teleop_twist_joy" type="test_joy_twist.py">
     <rosparam>
       publish_joy:
         axes: [ 0.3, 0.4 ]

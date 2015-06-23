@@ -30,6 +30,7 @@ import rospy
 import geometry_msgs.msg
 import sensor_msgs.msg
 
+
 class TestJoyTwist(unittest.TestCase):
 
     def setUp(self):
@@ -62,7 +63,6 @@ class TestJoyTwist(unittest.TestCase):
     def callback(self, msg):
         self.received_cmd_vel = geometry_msgs.msg.Twist()
         self.received_cmd_vel = msg
-
 
 
 if __name__ == '__main__':
