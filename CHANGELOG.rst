@@ -2,8 +2,8 @@
 Changelog for package teleop_twist_joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2015-06-27)
+------------------
 * Add rostests.
 * Added maps to allow multi-dof velocity publishing.
 * Added Xbox 360 controller example.
