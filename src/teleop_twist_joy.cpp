@@ -55,6 +55,7 @@ struct TeleopTwistJoy::Impl
 
   std::map<std::string, int> axis_angular_map;
   std::map<std::string, double> scale_angular_map;
+  std::map<std::string, double> scale_angular_turbo_map;
 
   bool sent_disable_msg;
 };
@@ -96,6 +97,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   {
     nh_param->param<int>("axis_angular", pimpl_->axis_angular_map["yaw"], 0);
     nh_param->param<double>("scale_angular", pimpl_->scale_angular_map["yaw"], 0.5);
+    nh_param->param<double>("scale_angular_turbo", pimpl_->scale_angular_turbo_map["yaw"], pimpl_->scale_angular_map["yaw"]);
   }
 
   ROS_INFO_NAMED("TeleopTwistJoy", "Teleop enable button %i.", pimpl_->enable_button);
@@ -142,15 +144,15 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     }
     if  (axis_angular_map.find("yaw") != axis_angular_map.end())
     {
-      cmd_vel_msg.angular.z = joy_msg->axes[axis_angular_map["yaw"]] * scale_angular_map["yaw"];
+      cmd_vel_msg.angular.z = joy_msg->axes[axis_angular_map["yaw"]] * scale_angular_turbo_map["yaw"];
     }
     if  (axis_angular_map.find("pitch") != axis_angular_map.end())
     {
-      cmd_vel_msg.angular.y = joy_msg->axes[axis_angular_map["pitch"]] * scale_angular_map["pitch"];
+      cmd_vel_msg.angular.y = joy_msg->axes[axis_angular_map["pitch"]] * scale_angular_turbo_map["pitch"];
     }
     if  (axis_angular_map.find("roll") != axis_angular_map.end())
     {
-      cmd_vel_msg.angular.x = joy_msg->axes[axis_angular_map["roll"]] * scale_angular_map["roll"];
+      cmd_vel_msg.angular.x = joy_msg->axes[axis_angular_map["roll"]] * scale_angular_turbo_map["roll"];
     }
 
     cmd_vel_pub.publish(cmd_vel_msg);
