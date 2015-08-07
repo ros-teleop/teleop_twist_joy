@@ -21,11 +21,11 @@
 # HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-PKG = 'teleop_twist_joy'
 
 import sys
 import unittest
 import time
+import rostest
 import rospy
 import geometry_msgs.msg
 import sensor_msgs.msg
@@ -66,5 +66,4 @@ class TestJoyTwist(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_joy_twist', TestJoyTwist)
+    rostest.rosrun('teleop_twist_joy', 'test_joy_twist', TestJoyTwist)
