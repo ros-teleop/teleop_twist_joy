@@ -120,6 +120,8 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   {
     ROS_INFO_NAMED("TeleopTwistJoy", "Angular axis %s on %i at scale %f.",
     it->first.c_str(), it->second, pimpl_->scale_angular_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
+        "Turbo for linear axis %s is scale %f.", it->first.c_str(), pimpl_->scale_angular_turbo_map[it->first]);
   }
 
   pimpl_->sent_disable_msg = false;
