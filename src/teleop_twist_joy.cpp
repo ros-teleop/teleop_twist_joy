@@ -92,6 +92,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   {
     nh_param->getParam("axis_angular", pimpl_->axis_angular_map);
     nh_param->getParam("scale_angular", pimpl_->scale_angular_map);
+    nh_param->getParam("scale_angular_turbo", pimpl_->scale_angular_turbo_map);
   }
   else
   {
