@@ -31,15 +31,15 @@ install(DIRECTORY launch config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 if (CATKIN_ENABLE_TESTING)
-	find_package(roslint REQUIRED)
+  find_package(roslint REQUIRED)
   roslint_cpp()
   roslint_python()
   roslint_add_test()
 
-	find_package(roslaunch REQUIRED)
+  find_package(roslaunch REQUIRED)
   roslaunch_add_file_check(launch/teleop.launch)
 
-	find_package(rostest REQUIRED)
+  find_package(rostest REQUIRED)
   include_directories(include ${catkin_INCLUDE_DIRS})
 
   # Check axes and scaling.
