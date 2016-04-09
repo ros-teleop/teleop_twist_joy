@@ -198,7 +198,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     // in order to stop the robot.
     if (!sent_disable_msg)
     {
-      //Send stop command three times to stop even if one message gets lost
+      // Send stop command three times to stop even if one message gets lost
       for (int i = 0; i < 3; i++)
       {
         cmd_vel_pub.publish(cmd_vel_msg);
