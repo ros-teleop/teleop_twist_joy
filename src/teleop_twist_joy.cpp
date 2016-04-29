@@ -168,7 +168,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     {
       cmd_vel_msg.linear.x = joy_msg->axes[axis_linear_map["x"]] * scale_linear_map["x"];
     }
-    if  (axis_linear_map.find("x") != axis_linear_map.end())
+    if  (axis_linear_map.find("y") != axis_linear_map.end())
     {
       cmd_vel_msg.linear.y = joy_msg->axes[axis_linear_map["y"]] * scale_linear_map["y"];
     }
