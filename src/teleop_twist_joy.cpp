@@ -48,7 +48,7 @@ struct TeleopTwistJoy::Impl
 
   int enable_button;		// Enable normal motion. Defaults to joystick button 0
   int enable_turbo_button;	// Enable sprint by using alternative gain. By default disabled (-1)
-  int break_button;		// Send break no-motion command. By default disabled (-1)
+  int brake_button;		// Send break no-motion command. By default disabled (-1)
 
   std::map<std::string, int> axis_linear_map;
   std::map<std::string, double> scale_linear_map;
@@ -75,7 +75,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
-  nh_param->param<int>("break_button", pimpl_->break_button, -1);
+  nh_param->param<int>("brake_button", pimpl_->brake_button, -1);
 
   if (nh_param->getParam("axis_linear", pimpl_->axis_linear_map))
   {
@@ -112,10 +112,10 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
                       "TeleopTwistJoy",
                       "Turbo on button %i.", 
                       pimpl_->enable_turbo_button);
-  ROS_INFO_COND_NAMED(pimpl_->break_button >= 0, 
+  ROS_INFO_COND_NAMED(pimpl_->brake_button >= 0, 
                       "TeleopTwistJoy",
                       "Breaking on button %i.", 
-                      pimpl_->break_button);
+                      pimpl_->brake_button);
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_linear_map.begin();
       it != pimpl_->axis_linear_map.end(); ++it)
@@ -153,7 +153,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
 
   if (enable_turbo_button >= 0 &&                       // turbo_button enabled AND
       joy_msg->buttons[enable_turbo_button] &&          // turbo_button pressed AND
-      !joy_msg->buttons[break_button] )                 // break_button not pressed
+      !joy_msg->buttons[brake_button] )                 // brake_button not pressed
   {
     if (axis_linear_map.find("x") != axis_linear_map.end())
     {
@@ -184,7 +184,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     sent_disable_msg = false;
   }
   else if ( (enable_button < 0 || joy_msg->buttons[enable_button]) &&	// (enable_button not enabled OR enable_button pressed ) AND
-            !joy_msg->buttons[break_button] )                           // breaking_button not pressed
+            !joy_msg->buttons[brake_button] )                           // breaking_button not pressed
   {
     if  (axis_linear_map.find("x") != axis_linear_map.end())
     {
