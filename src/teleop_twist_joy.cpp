@@ -48,7 +48,7 @@ struct TeleopTwistJoy::Impl
 
   int enable_button;		// Enable normal motion. Defaults to joystick button 0
   int enable_turbo_button;	// Enable sprint by using alternative gain. By default disabled (-1)
-  int brake_button;		// Send break no-motion command. By default disabled (-1)
+  int brake_button;		// Send brake no-motion command. By default disabled (-1)
 
   std::map<std::string, int> axis_linear_map;
   std::map<std::string, double> scale_linear_map;
