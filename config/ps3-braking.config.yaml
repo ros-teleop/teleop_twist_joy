@@ -5,6 +5,6 @@ scale_linear_turbo: 1.5
 axis_angular: 0
 scale_angular: 0.4
 
-enable_button: -1        # Movement always enabled
+enable_button: -1        # No need to press the enable_button
 enable_turbo_button: 10  # L1 shoulder button
-break_button: 8          # L2 shoulder button
+brake_button: 8          # L2 shoulder button
