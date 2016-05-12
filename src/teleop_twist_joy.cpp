@@ -46,9 +46,9 @@ struct TeleopTwistJoy::Impl
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
 
-  int enable_button;		// Enable normal motion. Defaults to joystick button 0
-  int enable_turbo_button;	// Enable sprint by using alternative gain. By default disabled (-1)
-  int brake_button;		// Send brake no-motion command. By default disabled (-1)
+  int enable_button;            // Enable normal motion. Defaults to joystick button 0
+  int enable_turbo_button;      // Enable sprint by using alternative gain. By default disabled (-1)
+  int brake_button;             // Send brake no-motion command. By default disabled (-1)
 
   std::map<std::string, int> axis_linear_map;
   std::map<std::string, double> scale_linear_map;
@@ -103,18 +103,18 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
     nh_param->param<double>("scale_angular_turbo",
         pimpl_->scale_angular_turbo_map["yaw"], pimpl_->scale_angular_map["yaw"]);
   }
-  
-  ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0, 
+
+  ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
                       "TeleopTwistJoy",
-                      "Teleop enable button %i.", 
+                      "Teleop enable button %i.",
                       pimpl_->enable_button);
-  ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, 
+  ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
                       "TeleopTwistJoy",
-                      "Turbo on button %i.", 
+                      "Turbo on button %i.",
                       pimpl_->enable_turbo_button);
-  ROS_INFO_COND_NAMED(pimpl_->brake_button >= 0, 
+  ROS_INFO_COND_NAMED(pimpl_->brake_button >= 0,
                       "TeleopTwistJoy",
-                      "Breaking on button %i.", 
+                      "Breaking on button %i.",
                       pimpl_->brake_button);
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_linear_map.begin();
@@ -122,24 +122,24 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   {
      ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
                          "TeleopTwistJoy",
-                         "Linear axis %s on %i at scale %f.", 
+                         "Linear axis %s on %i at scale %f.",
                          it->first.c_str(), it->second, pimpl_->scale_linear_map[it->first]);
      ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
                          "TeleopTwistJoy",
-                         "Turbo for linear axis %s is scale %f.", 
+                         "Turbo for linear axis %s is scale %f.",
                          it->first.c_str(), pimpl_->scale_linear_turbo_map[it->first]);
   }
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_angular_map.begin();
       it != pimpl_->axis_angular_map.end(); ++it)
   {
-    ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0, 
+    ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
                         "TeleopTwistJoy",
                         "Angular axis %s on %i at scale %f.",
                         it->first.c_str(), it->second, pimpl_->scale_angular_map[it->first]);
-    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, 
+    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
                         "TeleopTwistJoy",
-                        "Turbo for angular axis %s is scale %f.", 
+                        "Turbo for angular axis %s is scale %f.",
                         it->first.c_str(), pimpl_->scale_angular_turbo_map[it->first]);
   }
 
@@ -183,7 +183,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
-  else if ( (enable_button < 0 || joy_msg->buttons[enable_button]) &&	// (enable_button not enabled OR enable_button pressed ) AND
+  else if ( (enable_button < 0 || joy_msg->buttons[enable_button]) &&   // (movement enabled) AND
             !joy_msg->buttons[brake_button] )                           // breaking_button not pressed
   {
     if  (axis_linear_map.find("x") != axis_linear_map.end())
