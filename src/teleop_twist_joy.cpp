@@ -120,14 +120,14 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   for (std::map<std::string, int>::iterator it = pimpl_->axis_linear_map.begin();
       it != pimpl_->axis_linear_map.end(); ++it)
   {
-     ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
-                         "TeleopTwistJoy",
-                         "Linear axis %s on %i at scale %f.",
-                         it->first.c_str(), it->second, pimpl_->scale_linear_map[it->first]);
-     ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
-                         "TeleopTwistJoy",
-                         "Turbo for linear axis %s is scale %f.",
-                         it->first.c_str(), pimpl_->scale_linear_turbo_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
+                        "TeleopTwistJoy",
+                        "Linear axis %s on %i at scale %f.",
+                        it->first.c_str(), it->second, pimpl_->scale_linear_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
+                        "TeleopTwistJoy",
+                        "Turbo for linear axis %s is scale %f.",
+                        it->first.c_str(), pimpl_->scale_linear_turbo_map[it->first]);
   }
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_angular_map.begin();
