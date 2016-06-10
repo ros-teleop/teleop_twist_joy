@@ -7,4 +7,3 @@ scale_angular: 0.4
 
 enable_button: -1        # No need to press the enable_button
 enable_turbo_button: 10  # L1 shoulder button
-brake_button: 8          # L2 shoulder button
