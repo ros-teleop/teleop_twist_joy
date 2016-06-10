@@ -26,7 +26,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include "ros/ros.h"
 #include "sensor_msgs/Joy.h"
 #include "teleop_twist_joy/teleop_twist_joy.h"
-#include <iostream>
 
 #include <map>
 #include <string>
@@ -146,7 +145,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   // Initializes with zeros by default.
   geometry_msgs::Twist cmd_vel_msg;
 
-  if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button]) // Turbo button enabled AND pressed
+  if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])  // Turbo button enabled AND pressed
   {
     if (axis_linear_map.find("x") != axis_linear_map.end())
     {
