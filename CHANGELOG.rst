@@ -2,6 +2,15 @@
 Changelog for package teleop_twist_joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed incorrect key. (`#21 <https://github.com/ros-teleop/teleop_twist_joy/issues/21>`_)
+* Allow custom config file from location outside of this package
+* Setting scale_angular_turbo if axis_angular is set so that turning works when turbo is pressed.
+* Added turbo scale for angular velocities and accompanying test.
+* Add LICENSE.txt.
+* Contributors: Daniel Aden, Isaac I.Y. Saito, Mike Purvis, Tony Baltovski
+
 0.1.1 (2015-06-27)
 ------------------
 * Add rostests.
