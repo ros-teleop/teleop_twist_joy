@@ -2,8 +2,8 @@
 Changelog for package teleop_twist_joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-08-31)
+------------------
 * Fixed incorrect key. (`#21 <https://github.com/ros-teleop/teleop_twist_joy/issues/21>`_)
 * Allow custom config file from location outside of this package
 * Setting scale_angular_turbo if axis_angular is set so that turning works when turbo is pressed.
