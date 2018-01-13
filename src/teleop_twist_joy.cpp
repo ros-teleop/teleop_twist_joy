@@ -46,8 +46,8 @@ struct TeleopTwistJoy::Impl
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
 
-  int enable_button;
-  int enable_turbo_button;
+  int enable_button;            // Enable normal motion. Defaults to joystick button 0
+  int enable_turbo_button;      // Enable sprint by using alternative gain. By default disabled (-1)
 
   std::map<std::string, int> axis_linear_map;
   std::map<std::string, double> scale_linear_map;
@@ -102,26 +102,39 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
         pimpl_->scale_angular_turbo_map["yaw"], pimpl_->scale_angular_map["yaw"]);
   }
 
-  ROS_INFO_NAMED("TeleopTwistJoy", "Teleop enable button %i.", pimpl_->enable_button);
-  ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
-      "Turbo on button %i.", pimpl_->enable_turbo_button);
+  ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
+                      "TeleopTwistJoy",
+                      "Teleop enable button %i.",
+                      pimpl_->enable_button);
+  ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
+                      "TeleopTwistJoy",
+                      "Turbo on button %i.",
+                      pimpl_->enable_turbo_button);
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_linear_map.begin();
       it != pimpl_->axis_linear_map.end(); ++it)
   {
-    ROS_INFO_NAMED("TeleopTwistJoy", "Linear axis %s on %i at scale %f.",
-    it->first.c_str(), it->second, pimpl_->scale_linear_map[it->first]);
-    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
-        "Turbo for linear axis %s is scale %f.", it->first.c_str(), pimpl_->scale_linear_turbo_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
+                        "TeleopTwistJoy",
+                        "Linear axis %s on %i at scale %f.",
+                        it->first.c_str(), it->second, pimpl_->scale_linear_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
+                        "TeleopTwistJoy",
+                        "Turbo for linear axis %s is scale %f.",
+                        it->first.c_str(), pimpl_->scale_linear_turbo_map[it->first]);
   }
 
   for (std::map<std::string, int>::iterator it = pimpl_->axis_angular_map.begin();
       it != pimpl_->axis_angular_map.end(); ++it)
   {
-    ROS_INFO_NAMED("TeleopTwistJoy", "Angular axis %s on %i at scale %f.",
-    it->first.c_str(), it->second, pimpl_->scale_angular_map[it->first]);
-    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0, "TeleopTwistJoy",
-        "Turbo for angular axis %s is scale %f.", it->first.c_str(), pimpl_->scale_angular_turbo_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_button >= 0,
+                        "TeleopTwistJoy",
+                        "Angular axis %s on %i at scale %f.",
+                        it->first.c_str(), it->second, pimpl_->scale_angular_map[it->first]);
+    ROS_INFO_COND_NAMED(pimpl_->enable_turbo_button >= 0,
+                        "TeleopTwistJoy",
+                        "Turbo for angular axis %s is scale %f.",
+                        it->first.c_str(), pimpl_->scale_angular_turbo_map[it->first]);
   }
 
   pimpl_->sent_disable_msg = false;
@@ -132,7 +145,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   // Initializes with zeros by default.
   geometry_msgs::Twist cmd_vel_msg;
 
-  if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])
+  if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])  // Turbo button enabled AND pressed
   {
     if (axis_linear_map.find("x") != axis_linear_map.end())
     {
@@ -162,7 +175,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
-  else if (joy_msg->buttons[enable_button])
+  else if (joy_msg->buttons[enable_button] || enable_button < 0)   // enable_button pressed OR enable_button disabled
   {
     if  (axis_linear_map.find("x") != axis_linear_map.end())
     {
@@ -194,8 +207,8 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   }
   else
   {
-    // When enable button is released, immediately send a single no-motion command
-    // in order to stop the robot.
+    // When enable_button is released, immediately send a single no-motion command
+    // in order to stop the robot, unless enable_button is disabled (-1)
     if (!sent_disable_msg)
     {
       cmd_vel_pub.publish(cmd_vel_msg);
