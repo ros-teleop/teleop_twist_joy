@@ -130,7 +130,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
   // Initializes with zeros by default.
   geometry_msgs::Twist cmd_vel_msg;
 
-  if (enable_turbo_button >= 0 && joy_msg->buttons[enable_turbo_button])
+  if (enable_turbo_button >= 0 && joy_msg->buttons.size() > enable_turbo_button && joy_msg->buttons[enable_turbo_button])
   {
     if (axis_linear_map.find("x") != axis_linear_map.end())
     {
@@ -160,7 +160,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     cmd_vel_pub.publish(cmd_vel_msg);
     sent_disable_msg = false;
   }
-  else if (joy_msg->buttons[enable_button])
+  else if (joy_msg->buttons.size() > enable_button && joy_msg->buttons[enable_button])
   {
     if  (axis_linear_map.find("x") != axis_linear_map.end())
     {
