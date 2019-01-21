@@ -32,7 +32,7 @@ install(DIRECTORY launch config
 
 if (CATKIN_ENABLE_TESTING)
   find_package(roslint REQUIRED)
-  roslint_cpp()
+  roslint_cpp(include/ src/)
   roslint_python()
   roslint_add_test()
 
