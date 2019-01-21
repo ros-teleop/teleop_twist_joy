@@ -2,8 +2,8 @@
 Changelog for package teleop_twist_joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2019-01-21)
+------------------
 * Use industrial ci
 * Don't crash with invalid axes.
 * Make sure to not crash when the Joy message buttons is too small.
