@@ -23,6 +23,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 */
 
 #include "geometry_msgs/Twist.h"
+#include "geometry_msgs/TwistStamped.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/String.h"
 #include "ros/ros.h"
@@ -76,7 +77,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 {
   pimpl_ = new Impl;
 
-  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
+  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::TwistStamped>("cmd_vel", 1, true);
   pimpl_->mode_cmd_pub = nh->advertise<std_msgs::String>("send_command", 1, true);
   pimpl_->xci_control_pub = nh->advertise<std_msgs::Bool>("xci_control_enable", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
@@ -173,14 +174,18 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_m
                                          const std::string& which_map)
 {
   // Initializes with zeros by default.
-  geometry_msgs::Twist cmd_vel_msg;
+  // geometry_msgs::Twist cmd_vel_msg;
+  geometry_msgs::TwistStamped cmd_vel_msg;
 
-  cmd_vel_msg.linear.x = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
-  cmd_vel_msg.linear.y = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
-  cmd_vel_msg.linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
-  cmd_vel_msg.angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
-  cmd_vel_msg.angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
-  cmd_vel_msg.angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
+  cmd_vel_msg.header.stamp = ros::Time::now();
+  cmd_vel_msg.header.frame_id = "teleop_twist_joy";
+
+  cmd_vel_msg.twist.linear.x = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
+  cmd_vel_msg.twist.linear.y = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  cmd_vel_msg.twist.linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
+  cmd_vel_msg.twist.angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
+  cmd_vel_msg.twist.angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
+  cmd_vel_msg.twist.angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
 
   cmd_vel_pub.publish(cmd_vel_msg);
   sent_disable_msg = false;
@@ -242,7 +247,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     if (!sent_disable_msg)
     {
       // Initializes with zeros by default.
-      geometry_msgs::Twist cmd_vel_msg;
+      geometry_msgs::TwistStamped cmd_vel_msg;
       cmd_vel_pub.publish(cmd_vel_msg);
       sent_disable_msg = true;
     }
