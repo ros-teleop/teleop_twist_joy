@@ -235,7 +235,7 @@ void TeleopTwistJoy::Impl::sendCmdVelMsgTwist(const sensor_msgs::Joy::ConstPtr& 
 void TeleopTwistJoy::Impl::sendModeCmdMsg(const std::string& mode)
 {
   std_msgs::String cmd_mode_msg;
-  cmd_mode_msg.data = "piloting mode " + mode;
+  cmd_mode_msg.data = "piloting_mode " + mode;
   mode_cmd_pub.publish(cmd_mode_msg);
 }
 
