@@ -45,6 +45,8 @@ struct TeleopTwistJoy::Impl
 {
   void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
   void sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::string& which_map);
+  void sendCmdVelMsgTwistStamped(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::string& which_map);
+  void sendCmdVelMsgTwist(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::string& which_map);
   void sendModeCmdMsg(const std::string& mode);
   void sendXciControlEnable(const sensor_msgs::Joy::ConstPtr& joy_msg);
 
@@ -58,6 +60,8 @@ struct TeleopTwistJoy::Impl
   int manual_button;
   int auto_button;
   int xci_control_button;
+
+  std::string joy_vel_output;
 
   std::map<std::string, int> axis_linear_map;
   std::map< std::string, std::map<std::string, double> > scale_linear_map;
@@ -77,7 +81,13 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 {
   pimpl_ = new Impl;
 
-  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::TwistStamped>("cmd_vel", 1, true);
+  nh_param->param<std::string>("joy_vel_output", pimpl_->joy_vel_output, "TwistStamped");
+
+  if (pimpl_->joy_vel_output == "Twist")
+    pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
+  else
+    pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::TwistStamped>("cmd_vel", 1, true);
+
   pimpl_->mode_cmd_pub = nh->advertise<std_msgs::String>("send_command", 1, true);
   pimpl_->xci_control_pub = nh->advertise<std_msgs::Bool>("xci_control_enable", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
@@ -87,6 +97,7 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   nh_param->param<int>("manual_button", pimpl_->manual_button, -1);
   nh_param->param<int>("auto_button", pimpl_->auto_button, -1);
   nh_param->param<int>("xci_control_button", pimpl_->xci_control_button, -1);
+  
 
   if (nh_param->getParam("axis_linear", pimpl_->axis_linear_map))
   {
@@ -170,11 +181,21 @@ double getVal(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::map<std::str
   return joy_msg->axes[axis_map.at(fieldname)] * scale_map.at(fieldname);
 }
 
+// function to make it backwards compatible
+// but still support multiple types for joy_vel outputs
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_msg,
                                          const std::string& which_map)
 {
+  if (joy_vel_output == "Twist")
+    sendCmdVelMsgTwist(joy_msg, which_map);
+  else
+    sendCmdVelMsgTwistStamped(joy_msg, which_map);
+}
+
+void TeleopTwistJoy::Impl::sendCmdVelMsgTwistStamped(const sensor_msgs::Joy::ConstPtr& joy_msg,
+                                         const std::string& which_map)
+{
   // Initializes with zeros by default.
-  // geometry_msgs::Twist cmd_vel_msg;
   geometry_msgs::TwistStamped cmd_vel_msg;
 
   cmd_vel_msg.header.stamp = ros::Time::now();
@@ -186,6 +207,23 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_m
   cmd_vel_msg.twist.angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
   cmd_vel_msg.twist.angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
   cmd_vel_msg.twist.angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
+
+  cmd_vel_pub.publish(cmd_vel_msg);
+  sent_disable_msg = false;
+}
+
+void TeleopTwistJoy::Impl::sendCmdVelMsgTwist(const sensor_msgs::Joy::ConstPtr& joy_msg,
+                                              const std::string& which_map)
+{
+  // Initializes with zeros by default.
+  geometry_msgs::Twist cmd_vel_msg;
+
+  cmd_vel_msg.linear.x = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
+  cmd_vel_msg.linear.y = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  cmd_vel_msg.linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
+  cmd_vel_msg.angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
+  cmd_vel_msg.angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
+  cmd_vel_msg.angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
 
   cmd_vel_pub.publish(cmd_vel_msg);
   sent_disable_msg = false;
@@ -247,8 +285,16 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     if (!sent_disable_msg)
     {
       // Initializes with zeros by default.
-      geometry_msgs::TwistStamped cmd_vel_msg;
-      cmd_vel_pub.publish(cmd_vel_msg);
+      if (joy_vel_output == "Twist")
+      {
+        geometry_msgs::Twist cmd_vel_msg;
+        cmd_vel_pub.publish(cmd_vel_msg);
+      }
+      else
+      {
+        geometry_msgs::TwistStamped cmd_vel_msg;
+        cmd_vel_pub.publish(cmd_vel_msg);
+      }
       sent_disable_msg = true;
     }
   }
