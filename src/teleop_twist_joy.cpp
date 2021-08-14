@@ -29,6 +29,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include "ros/ros.h"
 #include "sensor_msgs/Joy.h"
 #include "teleop_twist_joy/teleop_twist_joy.h"
+#include "gfoe_j1939_blue_arrow_interface/BlueArrowHelmMode.h"
 
 #include <map>
 #include <string>
@@ -49,18 +50,26 @@ struct TeleopTwistJoy::Impl
   void sendCmdVelMsgTwist(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::string& which_map);
   void sendModeCmdMsg(const std::string& mode);
   void sendXciControlEnable(const sensor_msgs::Joy::ConstPtr& joy_msg);
-
+  void sendBlueArrowModeMsg();
+  
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
   ros::Publisher mode_cmd_pub;
   ros::Publisher xci_control_pub;
+  ros::Publisher bluearrow_mode_pub;
 
   int enable_button;
   int enable_turbo_button;
   int manual_button;
   int auto_button;
   int xci_control_button;
+  int open_loop_button;
+  int station_keep_button;
+  int virtual_anchor_button;
 
+  // Store state
+  gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode bluearrow_mode;
+  
   std::string joy_vel_output;
 
   std::map<std::string, int> axis_linear_map;
@@ -83,12 +92,20 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 
   nh_param->param<std::string>("joy_vel_output", pimpl_->joy_vel_output, "TwistStamped");
 
+  // Initialize state
+  pimpl_->bluearrow_mode = gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode();
+  pimpl_->bluearrow_mode.mode =
+    gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode::OPEN_LOOP;
+
   if (pimpl_->joy_vel_output == "Twist")
     pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
   else
     pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::TwistStamped>("cmd_vel", 1, true);
 
   pimpl_->mode_cmd_pub = nh->advertise<std_msgs::String>("send_command", 1, true);
+  pimpl_->bluearrow_mode_pub = nh->advertise
+    <gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode>("bluearrow_mode_cmd",
+							 1, true);
   pimpl_->xci_control_pub = nh->advertise<std_msgs::Bool>("xci_control_enable", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
 
@@ -97,6 +114,9 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
   nh_param->param<int>("manual_button", pimpl_->manual_button, -1);
   nh_param->param<int>("auto_button", pimpl_->auto_button, -1);
   nh_param->param<int>("xci_control_button", pimpl_->xci_control_button, -1);
+  nh_param->param<int>("open_loop_button", pimpl_->open_loop_button, -1);
+  nh_param->param<int>("virtual_anchor_button", pimpl_->virtual_anchor_button, -1);
+  nh_param->param<int>("station_keep_button", pimpl_->station_keep_button, -1);
   
 
   if (nh_param->getParam("axis_linear", pimpl_->axis_linear_map))
@@ -239,6 +259,12 @@ void TeleopTwistJoy::Impl::sendModeCmdMsg(const std::string& mode)
   mode_cmd_pub.publish(cmd_mode_msg);
 }
 
+void TeleopTwistJoy::Impl::sendBlueArrowModeMsg()
+{
+  bluearrow_mode.header.stamp = ros::Time::now();
+  bluearrow_mode_pub.publish(bluearrow_mode);
+}
+
 // teleop_twist_jow will send xci control enable commands to blue_arrow interface
 // default rostopic: /xci_control_enable
 // data: bool
@@ -257,26 +283,53 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg
     sendXciControlEnable(joy_msg);
   }
 
-  if (enable_turbo_button >= 0 &&
-      joy_msg->buttons.size() > enable_turbo_button &&
-      joy_msg->buttons[enable_turbo_button])
-  {
-    sendCmdVelMsg(joy_msg, "turbo");
-  }
-  else if (joy_msg->buttons.size() > enable_button &&
+  // Only publish when enabled 
+  if (joy_msg->buttons.size() > enable_button &&
            joy_msg->buttons[enable_button])
   {
     sendCmdVelMsg(joy_msg, "normal");
-  }
-  else if (joy_msg->buttons.size() > manual_button &&
-           joy_msg->buttons[manual_button])
-  {
+
+    // HACK
     sendModeCmdMsg("manual");
-  }
-  else if (joy_msg->buttons.size() > auto_button &&
-           joy_msg->buttons[auto_button])
-  {
-    sendModeCmdMsg("autonomous");
+    
+    // Enter manual mode
+    if (joy_msg->buttons.size() > manual_button &&
+	joy_msg->buttons[manual_button])
+      {
+	sendModeCmdMsg("manual");
+      }
+    // Enter autonomous mode
+    else if (joy_msg->buttons.size() > auto_button &&
+	joy_msg->buttons[auto_button])
+      {
+	//HACK
+	//sendModeCmdMsg("autonomous");
+      }
+    // Blue arrow command mode
+    if (joy_msg->buttons.size() > station_keep_button &&
+	joy_msg->buttons[station_keep_button])
+      {
+	bluearrow_mode.mode =
+	  gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode::STATION_KEEP;
+	sendBlueArrowModeMsg();
+      }
+    else if (joy_msg->buttons.size() > open_loop_button &&
+	joy_msg->buttons[open_loop_button])
+      {
+	bluearrow_mode.mode =
+	  gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode::OPEN_LOOP;
+	sendBlueArrowModeMsg();
+      }
+
+    else if (joy_msg->buttons.size() > virtual_anchor_button &&
+	     joy_msg->buttons[virtual_anchor_button])
+      {
+	bluearrow_mode.mode =
+	  gfoe_j1939_blue_arrow_interface::BlueArrowHelmMode::VIRTUAL_ANCHOR;
+	sendBlueArrowModeMsg();
+      }
+    
+
   }
   else
   {
