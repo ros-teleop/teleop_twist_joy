@@ -11,7 +11,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME} src/${PROJECT_NAME})
+add_library(${PROJECT_NAME} src/${PROJECT_NAME}.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_node src/teleop_node.cpp)
