@@ -43,12 +43,21 @@ struct TeleopTwistJoy::Impl
 {
   void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
   void sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_msg, const std::string& which_map);
+  void speed_control(const sensor_msgs::Joy::ConstPtr& joy_msg);
 
   ros::Subscriber joy_sub;
   ros::Publisher cmd_vel_pub;
 
   int enable_button;
   int enable_turbo_button;
+  int linear_increase_button;
+  int linear_decrease_button;
+  int angular_increase_button;
+  int angular_decrease_button;
+  double increase_value;
+  double decrease_value;
+  // These variables will be used to control only when the button is pressed.
+  bool speed_control_state[3] = {false,false,false};
 
   std::map<std::string, int> axis_linear_map;
   std::map< std::string, std::map<std::string, double> > scale_linear_map;
@@ -73,6 +82,26 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle* nh, ros::NodeHandle* nh_param)
 
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
+  nh_param->param<int>("linear_increase_button", pimpl_->linear_increase_button, -1);
+  nh_param->param<int>("linear_decrease_button", pimpl_->linear_decrease_button, -1);
+  nh_param->param<int>("angular_increase_button", pimpl_->angular_increase_button, -1);
+  nh_param->param<int>("angular_decrease_button", pimpl_->angular_decrease_button, -1);
+  nh_param->param<double>("increase_value", pimpl_->increase_value, 0.01);
+  nh_param->param<double>("decrease_value", pimpl_->decrease_value, 0.01);
+
+  if(pimpl_->increase_value<0.0)
+  {
+    ROS_ERROR("İncrease value cannot be negative");
+    pimpl_->increase_value*=-1;
+    ROS_WARN("Increment value set to %f",pimpl_->increase_value);
+  }
+  if(pimpl_->decrease_value<0.0)
+  {
+    ROS_ERROR("Decrease value cannot be negative");
+    pimpl_->decrease_value*=-1;
+    ROS_WARN("Increment value set to %f",pimpl_->decrease_value);
+  }
+  
 
   if (nh_param->getParam("axis_linear", pimpl_->axis_linear_map))
   {
@@ -154,8 +183,77 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr& joy_m
   sent_disable_msg = false;
 }
 
+void TeleopTwistJoy::Impl::speed_control(const sensor_msgs::Joy::ConstPtr& joy_msg)
+{
+  if(linear_increase_button>0  && joy_msg->buttons[linear_increase_button] )
+  {
+    if(!speed_control_state[0])
+    {
+      speed_control_state[0]=true;
+      if( scale_linear_map["normal"]["x"]< scale_linear_map["turbo"]["x"])
+      {
+        scale_linear_map["normal"]["x"] += increase_value; 
+      }
+      ROS_INFO("linear max speed %f",scale_linear_map["normal"]["x"]);
+    }
+  }else{
+    speed_control_state[0]=false;
+  }
+
+  if(linear_decrease_button>0 && joy_msg->buttons[linear_decrease_button] )
+  {
+    if(!speed_control_state[1])
+    {
+      speed_control_state[1]=true;
+      
+      scale_linear_map["normal"]["x"] -= decrease_value; 
+      if(scale_linear_map["normal"]["x"]<0.01)
+      {
+        scale_linear_map["normal"]["x"] =0.01;
+      }
+      ROS_INFO("Linear max speed %f",scale_linear_map["normal"]["x"]);
+    }
+  }else{
+    speed_control_state[1]=false;
+  }
+
+  if(angular_increase_button>0  && joy_msg->buttons[angular_increase_button] )
+  {
+    if(!speed_control_state[2])
+    {
+      speed_control_state[2]=true;
+      if( scale_angular_map["normal"]["yaw"]< scale_angular_map["turbo"]["yaw"])
+      {
+        scale_angular_map["normal"]["yaw"] += increase_value; 
+      }
+      ROS_INFO("Angular max speed %f",scale_angular_map["normal"]["yaw"]);
+    }
+  }else{
+    speed_control_state[2]=false;
+  }
+
+  if(linear_increase_button>0 && joy_msg->buttons[angular_decrease_button] )
+  {
+    if(!speed_control_state[3])
+    {
+      speed_control_state[3]=true;
+      scale_angular_map["normal"]["yaw"] -= decrease_value; 
+      if(scale_angular_map["normal"]["yaw"]<0.01)
+      {
+        scale_angular_map["normal"]["yaw"] =0.01;
+      }
+      ROS_INFO("Angular max speed %f",scale_angular_map["normal"]["yaw"]);
+    }
+  }else{
+    speed_control_state[3]=false;
+  }
+}
+
 void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg)
 {
+
+  speed_control(joy_msg);
+
   if (enable_turbo_button >= 0 &&
       joy_msg->buttons.size() > enable_turbo_button &&
       joy_msg->buttons[enable_turbo_button])

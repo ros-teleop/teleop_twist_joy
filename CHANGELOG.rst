@@ -2,6 +2,11 @@
 Changelog for package teleop_twist_joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.4 (2023-07-17)
+------------------
+* Added max speed control
+* Contributors: Hasan Ozcan
+
 0.1.3 (2019-01-21)
 ------------------
 * Use industrial ci
